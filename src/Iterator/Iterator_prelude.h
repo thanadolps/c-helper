@@ -3,6 +3,6 @@
 
 #include "Iterator.h"
 #include "Adaptor.h"
-
+#include "Consumer.h"
 
 #endif

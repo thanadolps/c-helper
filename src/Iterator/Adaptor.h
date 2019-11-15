@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-namespace Adaptor {
+namespace Iter {
 /**
  * Iterator Adaptor that yield the transformed `inner iterator`'s yield
  * 
