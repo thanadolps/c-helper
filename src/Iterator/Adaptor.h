@@ -2,6 +2,7 @@
 #define THANADOL_HELPER_ITER_ADAPT_H
 
 #include <stddef.h>
+#include "../common_types.h"
 
 namespace Iter {
 /**
@@ -10,39 +11,54 @@ namespace Iter {
  * Note:
  * U: transformed yield type (type that this Map yield)
 */
-template <typename U, typename InnerIterable>
+template <typename U, typename AdditionalData, typename InnerIterable>
 class Map {
 
     typename InnerIterable::Iterator inner_begin;
     typename InnerIterable::Iterator inner_end;
-    U(*transformer)(typename InnerIterable::Output);
+    U(*transformer)(typename InnerIterable::Output, AdditionalData& data);
+    AdditionalData& data;
 public:
     typedef U Output;
     struct Iterator {
         typename InnerIterable::Iterator inner_iterator;
-        U(*transformer)(typename InnerIterable::Output);
+        U(*transformer)(typename InnerIterable::Output, AdditionalData& data);
+        AdditionalData& data;
 
         bool operator!=(Iterator& other) { return this->inner_iterator != other.inner_iterator; }
         void operator++() { ++(this->inner_iterator); }
-        U operator*() { return transformer(*this->inner_iterator); }
+        U operator*() { return transformer(*this->inner_iterator, data); }
     };
 
-    Map(InnerIterable& iterable, U(*transformer)(typename InnerIterable::Output)):
+    Map(InnerIterable& iterable, U(*transformer)(typename InnerIterable::Output, AdditionalData&), AdditionalData& data):
         inner_begin(iterable.begin()),
         inner_end(iterable.end()),
-        transformer(transformer)
+        transformer(transformer),
+        data(data)
     {
     }
     
-    Iterator begin() { return {inner_begin, transformer}; }
-    Iterator end() { return {inner_end, transformer}; }
+    Iterator begin() { return {inner_begin, transformer, data}; }
+    Iterator end() { return {inner_end, transformer, data}; }
 };
 
-template <typename U, typename InnerIterable>
-Map<U, InnerIterable> map(InnerIterable& iterable, U(*transformer)(typename InnerIterable::Output)) {
-    return Map<U, InnerIterable>(iterable, transformer);
+template <typename U, typename AdditionalData, typename InnerIterable>
+auto map(
+    InnerIterable& iterable,
+    U(*transformer)(typename InnerIterable::Output, AdditionalData& data),
+    AdditionalData* data
+    ) -> Map<U, AdditionalData, InnerIterable> {
+    return Map<U, AdditionalData, InnerIterable>(iterable, transformer, *data);
 }
 
+
+template <typename U, typename InnerIterable>
+auto map(
+    InnerIterable& iterable,
+    U(*transformer)(typename InnerIterable::Output, CommonType::Empty&)
+    ) -> Map<U, CommonType::Empty, InnerIterable> {
+    return Map<U, CommonType::Empty, InnerIterable>(iterable, transformer, CommonType::EMPTY);
+}
 
 
 
