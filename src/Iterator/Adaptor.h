@@ -45,8 +45,8 @@ public:
 template <typename U, typename AdditionalData, typename InnerIterable>
 auto map(
     InnerIterable& iterable,
-    U(*transformer)(typename InnerIterable::Output, AdditionalData& data),
-    AdditionalData* data
+    AdditionalData* data,
+    U(*transformer)(typename InnerIterable::Output, AdditionalData& data)
     ) -> Map<U, AdditionalData, InnerIterable> {
     return Map<U, AdditionalData, InnerIterable>(iterable, transformer, *data);
 }
